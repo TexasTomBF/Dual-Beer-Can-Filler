@@ -1,6 +1,8 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
+// THIS CODE IS NOW OUTDATED, A NEW VERSION EXISTS
+
 //  TTBF Dual Can Filler v0.2
 
 //This code is 100% functional but could be tidied and streamlined a lot more (work in progress). Could also be optimized with more fuctions etc etc. CAn be used with any Arduino model like the Nano or UNO.
