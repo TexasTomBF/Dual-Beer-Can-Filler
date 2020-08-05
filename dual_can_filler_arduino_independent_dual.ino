@@ -1,18 +1,20 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-//  TTBF Dual Can Filler v1.01
+//  TTBF Dual Can Filler v1.02
 
 //This code is 100% functional but could be tidied and streamlined a lot more (work in progress). Could also be optimized with more fuctions etc etc. Can be used with any Arduino model like the Nano or UNO.
-//Currently its supporting 2 push buttons and one I2C display, the display is showing purgning and dispense status for both filler lines.
+//Currently its supporting 2 momentary push buttons and one I2C display, the display is showing purging and dispense status for both filler lines.
 //The two buttons has same fuctions for each fill line:
-//-- SHORT PRESS starts whole sequence with purging and filling corresponing beer line.
-//-- At first filling both buttons needs to SHORT PRESSED again for the corresponding line when desired fill level is reached. The desired fill level is then stored for future fills (until reset or power down).
-//-- the next fill will stop at the programmed fill level, the display will indicate wit an '*' next to the fill level measurement.
-//-- After filling a LONG PRESS of any of the buttons resets the fill level for the corresponing beer line, indicated with a captial 'R' in the display. This allows to correct fill level when changing can size etc.
+//-- SHORT PRESS starts whole sequence with purging and filling corresponding beer line.
+//-- At first filling both buttons needs to be SHORT PRESSED again for the corresponding line when desired fill level is reached. The desired fill level is then stored for future fills (until reset or power down).
+//-- the next fill will stop at the programmed fill level, the display will indicate fill level reached with an '*' next to the fill level measurement.
+//-- After filling a LONG PRESS of any of the buttons resets the fill level for the corresponing beer line, indicated with a captial 'R' in the display for corresponding beer line. This allows to correct/reset fill level when changing can size etc. The new level must then be set on next filling (like at power up).
 //
-//The display itself is also cosmetical in one sense, the filler wors perfectly without it if you desire to leave it out.
+//The display itself is purely cosmetical in one sense, the filler works perfectly without it if you desire to leave it out.
 //Displayed fill level progress is in 'mililiters' and must be calibrated for each system before first time use. Purely cosmetical, no practical implications if not calibrated. Can easily be changed to other units if desired, or removed completely.
+//
+//Differential pressure sensors are used for level sensing using the same fill tube as for co2 purging. Separate fill tubes for beer. 12V Solenoid valves for water/beer and three way 12V solenoid valves for co2/level sensing. Full parts list on GitHub also.
 
 byte ValveCO2_1 = 8;
 byte ValveCO2_2 = 7;
@@ -86,7 +88,7 @@ void setup()
 
   lcd.init();                                                   // initialize the lcd
   lcd.backlight();
- 
+
 
 
   lcd.setCursor(1, 0);
@@ -105,13 +107,13 @@ void loop()
   //Test for button pressed and store the down time
   if ( buttonVal2 == HIGH && buttonLast2 == LOW && (millis() - btnUpTime2) > long(debounce))
   {
-   
+
     btnDnTime2 = millis();
   }
 
   if ( buttonVal1 == HIGH && buttonLast1 == LOW && (millis() - btnUpTime1) > long(debounce))
   {
-   
+
     btnDnTime1 = millis();
   }
 
@@ -120,11 +122,24 @@ void loop()
   {
 
     if (ignoreUp1 == false) {
-      if (start_dispense_1 == true) {
-       
+      if (start_co2_1_flag == true) {
+        valveStateBeer_1 = LOW;
+        valveStateCO2_1 = LOW;
+        digitalWrite(ValveCO2_1, LOW);
+        digitalWrite(ValveBeer_1, LOW);
+        lcd.setCursor(0, 2);
+        lcd.print("          ");
+        lcd.setCursor(1, 2);
+        lcd.print("Aborted");
+        start_co2_1_flag = false;
+        start_dispense_1 = false;
+      }
+      else if (start_dispense_1 == true) {
+
         Clear_Display();
         set_fillevel_1();
       }
+
       else {
         Clear_Display();
         eventPress1();
@@ -139,11 +154,23 @@ void loop()
   if ( buttonVal2 == LOW && buttonLast2 == HIGH && (millis() - btnDnTime2) > long(debounce))
   {
     if (ignoreUp2 == false) {
-      if (start_dispense_2 == true) {
-        Serial.println("Dispense2 is active");
+      if (start_co2_2_flag == true) {
+        valveStateBeer_2 = LOW;
+        valveStateCO2_2 = LOW;
+        digitalWrite(ValveCO2_2, LOW);
+        digitalWrite(ValveBeer_2, LOW);
+        lcd.setCursor(10, 2);
+        lcd.print("          ");
+        lcd.setCursor(11, 2);
+        lcd.print("Aborted");
+        start_co2_2_flag = false;
+        start_dispense_2 = false;
+      }
+      else if (start_dispense_2 == true) {
         Clear_Display2();
         set_fillevel_2();
       }
+
       else {
         Clear_Display2();
         eventPress2();
@@ -183,12 +210,12 @@ void loop()
 
   if ((analogRead (FillLevelPressure_1)) > (FillThreshold_1) &&  (valveStateBeer_1 == HIGH) )  //regardless if button pushed, always check if filllevel is reached
   {
-   Fil1Level_reached1 ();
+    Fil1Level_reached1 ();
   }
 
   if ((analogRead (FillLevelPressure_2)) > (FillThreshold_2) &&  (valveStateBeer_2 == HIGH) )  //regardless if button pushed, always check if filllevel is reached
   {
-   Fil1Level_reached2 ();
+    Fil1Level_reached2 ();
   }
 }
 /////////////////////////////////////
@@ -216,13 +243,19 @@ void UpdateDisplay ()
     //      delay (2);
     //    }
     //    FillLevel_2 /= 5;
-Serial.println(F("display update done"));
+    Serial.println(F("display update done"));
     FillLevel_2 = analogRead (FillLevelPressure_2);
     FillLevel_1 = analogRead (FillLevelPressure_1);
-
-    FillLevel_1_round = int ((FillLevel_1 - 699) * 2.56);
-    FillLevel_2_round = int ((FillLevel_2 - 730) * 2.56);
-    if (FillLevel_1_round >= 50 || FillLevel_2_round >= 50)
+    FillLevel_2 -= 555;
+    FillLevel_1 -= 520;
+    
+    FillLevel_1_round = int ((FillLevel_1 + 117) * 1.60);
+    FillLevel_2_round = int ((FillLevel_2 + 80.2) * 1.55);
+    Serial.println(FillLevel_1_round);
+    Serial.println(FillLevel_2_round);
+    Serial.println(FillLevel_1);
+    Serial.println(FillLevel_2);
+    if (FillLevel_1_round >= 120 || FillLevel_2_round >= 115)
     {
 
       //  Serial.println(FillLevel_1_round);
@@ -267,7 +300,7 @@ void set_fillevel_1 () {
   }
 
   //  // Serial.println("Beer valves closed2");
- // lcd.setCursor(0, 2);
+  // lcd.setCursor(0, 2);
   //lcd.print("          ");
   lcd.setCursor(1, 2);
   lcd.print("LevelSet");
@@ -293,8 +326,8 @@ void set_fillevel_2 () {
     digitalWrite(ValveBeer_2, valveStateBeer_2);
 
     //lcd.setCursor(10, 2);
-   /// lcd.print("          ");
-    lcd.setCursor(10, 2);
+    /// lcd.print("          ");
+    lcd.setCursor(11, 2);
     lcd.print("LevelSet");
 
     start_dispense_2 = false;
@@ -321,6 +354,7 @@ void stop_purge1 ()
 
   start_dispense_1 = true;
   purge_complete_1 = true;
+  start_co2_1_flag = false;
 }
 
 void stop_purge2 ()
@@ -343,6 +377,7 @@ void stop_purge2 ()
 
   start_dispense_2 = true;
   purge_complete_2 = true;
+  start_co2_2_flag = false;
 }
 
 void eventPress1()
@@ -416,7 +451,7 @@ void Fil1Level_reached2()
   lcd.print("Finished");
   digitalWrite(ValveBeer_2, LOW);
 
-  start_dispense_2 =false;
+  start_dispense_2 = false;
 }
 
 void Fil1Level_reached1()
@@ -436,7 +471,7 @@ void Fil1Level_reached1()
   lcd.print("Finished");
   digitalWrite(ValveBeer_1, LOW);
 
-   start_dispense_1 =false;
+  start_dispense_1 = false;
 }
 
 void Clear_Display()
@@ -453,9 +488,9 @@ void Clear_Display()
 void Clear_Display2()
 {
   lcd.setCursor(10, 2);
-  lcd.print("                    ");
+  lcd.print("          ");
   lcd.setCursor(10, 3);
-  lcd.print("                    ");
+  lcd.print("          ");
   lcd.setCursor(10, 1);
   lcd.print("----------");
 
