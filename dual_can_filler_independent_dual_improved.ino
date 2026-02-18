@@ -18,9 +18,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-//  TTBF Dual Can Filler v1.02 - Improved
-
-//This code is 100% functional but could be tidied and streamlined a lot more (work in progress). Could also be optimized with more functions etc etc. Can be used with any Arduino model like the Nano or UNO.
+//This code is fully functional and refactored for improved maintainability and non-blocking operation. Can be used with any Arduino model like the Nano or UNO.
 //Currently its supporting 2 momentary push buttons and one I2C display, the display is showing purging and dispense status for both filler lines.
 //The two buttons have same functions for each fill line:
 //-- SHORT PRESS starts whole sequence with purging and filling corresponding beer line.
@@ -244,7 +242,6 @@ void loop()
     settling_1 = false;
     valveStateBeer_1 = HIGH;
     digitalWrite(PIN_BEER_1, valveStateBeer_1);
-    
     lcd.setCursor(0, 2);
     lcd.print("          ");
     lcd.setCursor(1, 2);
@@ -257,7 +254,6 @@ void loop()
     settling_2 = false;
     valveStateBeer_2 = HIGH;
     digitalWrite(PIN_BEER_2, valveStateBeer_2);
-    
     lcd.setCursor(10, 2);
     lcd.print("          ");
     lcd.setCursor(11, 2);
@@ -376,6 +372,8 @@ void stop_purge2()
 {
   valveStateCO2_2 = LOW;  // stop Co2 flow
   digitalWrite(PIN_CO2_2, valveStateCO2_2);
+
+  DBG_PRINTLN_F("CO2_2 purge complete");
   
   // Start settling period instead of delay
   settling_2 = true;
