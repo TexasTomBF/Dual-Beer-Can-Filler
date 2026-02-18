@@ -322,19 +322,19 @@ void handleButtonPress(BeerLine& line) {
   lcd.setCursor(0, 1);
   lcd.print("--------------------");
   
-  // Check if this is button 1 or button 2
-  bool isLine1 = (line.pinSwitch == PIN_SWITCH_1);
+  // Check if both lines are idle or finished (safe to start new sequence)
+  bool bothIdle = (line1.state == STATE_IDLE || line1.state == STATE_FINISHED) &&
+                  (line2.state == STATE_IDLE || line2.state == STATE_FINISHED);
   
-  if (line.state == STATE_IDLE) {
-    // Button pressed to initiate filling sequence
-    // Start the fill sequence for BOTH lines
+  if (bothIdle) {
+    // Both lines ready - start the fill sequence for BOTH lines
     startFillSequence();
   } else if (line.state == STATE_DISPENSING) {
     // Button pressed during dispensing - set fill threshold
     line.fillThreshold = analogRead(line.pinPressure);
     stopLine(line, line.lcdCol);
   } else {
-    // Button pressed during purging or other state - stop everything
+    // Button pressed during purging or settling - stop this line
     stopLine(line, line.lcdCol);
   }
 }
