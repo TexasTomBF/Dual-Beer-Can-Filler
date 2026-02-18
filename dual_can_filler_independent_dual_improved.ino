@@ -14,6 +14,7 @@
 //   - Named calibration constants
 //   - Consolidated clearDisplayHalf() helper
 //   - Fixed Fil1Level_reached naming typo -> fillLevelReached
+//   - Added fill level detection debouncing to prevent premature stops from sensor noise
 
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
@@ -62,6 +63,9 @@ const unsigned long PURGE_PERIOD_MS  = 7000;
 const unsigned long SETTLE_TIME_1_MS = 300;
 const unsigned long SETTLE_TIME_2_MS = 500;
 
+// Fill level detection debounce - number of consecutive readings required
+const int FILL_DEBOUNCE_COUNT = 3;
+
 // Calibration constants
 const int   SENSOR_OFFSET_1      = 520;
 const int   SENSOR_OFFSET_2      = 555;
@@ -79,6 +83,8 @@ int FillLevel_1;
 int FillLevel_2;
 int FillLevel_1_round;
 int FillLevel_2_round;
+int fillDebounceCount_1 = 0;  // Consecutive readings above threshold for line 1
+int fillDebounceCount_2 = 0;  // Consecutive readings above threshold for line 2
 
 // Valve state variables
 bool valveStateCO2_1 = LOW;
@@ -249,6 +255,7 @@ void loop()
     lcd.setCursor(1, 2);
     lcd.print("Filling");
     start_dispense_1 = true;
+    fillDebounceCount_1 = 0;  // Reset debounce counter when starting to fill
   }
 
   if (settling_2 == true && (millis() - settleStartTime2) > SETTLE_TIME_2_MS) {
@@ -260,20 +267,54 @@ void loop()
     lcd.setCursor(11, 2);
     lcd.print("Filling");
     start_dispense_2 = true;
+    fillDebounceCount_2 = 0;  // Reset debounce counter when starting to fill
   }
 
   buttonLast1 = buttonVal1;
   buttonLast2 = buttonVal2;
 
-  // Regardless if button pushed, always check if fill level is reached
-  if ((analogRead(PIN_PRESSURE_1)) > (FillThreshold_1) && (valveStateBeer_1 == HIGH))
+  // Check if fill level is reached with debouncing to prevent false triggers from noise
+  // Requires multiple consecutive readings above threshold
+  if (valveStateBeer_1 == HIGH)
   {
-    fillLevelReached1();
+    if (analogRead(PIN_PRESSURE_1) > FillThreshold_1)
+    {
+      fillDebounceCount_1++;
+      if (fillDebounceCount_1 >= FILL_DEBOUNCE_COUNT)
+      {
+        fillDebounceCount_1 = 0;  // Reset counter
+        fillLevelReached1();
+      }
+    }
+    else
+    {
+      fillDebounceCount_1 = 0;  // Reset if reading drops below threshold
+    }
+  }
+  else
+  {
+    fillDebounceCount_1 = 0;  // Reset when not dispensing
   }
 
-  if ((analogRead(PIN_PRESSURE_2)) > (FillThreshold_2) && (valveStateBeer_2 == HIGH))
+  if (valveStateBeer_2 == HIGH)
   {
-    fillLevelReached2();
+    if (analogRead(PIN_PRESSURE_2) > FillThreshold_2)
+    {
+      fillDebounceCount_2++;
+      if (fillDebounceCount_2 >= FILL_DEBOUNCE_COUNT)
+      {
+        fillDebounceCount_2 = 0;  // Reset counter
+        fillLevelReached2();
+      }
+    }
+    else
+    {
+      fillDebounceCount_2 = 0;  // Reset if reading drops below threshold
+    }
+  }
+  else
+  {
+    fillDebounceCount_2 = 0;  // Reset when not dispensing
   }
 }
 /////////////////////////////////////
