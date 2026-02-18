@@ -177,6 +177,7 @@ void loop()
         start_co2_1_flag = false;
         start_dispense_1 = false;
         settling_1 = false;
+        fillDebounceCount_1 = 0;  // Reset debounce counter on abort
       }
       else if (start_dispense_1 == true) {
         clearDisplayHalf(0);
@@ -207,6 +208,7 @@ void loop()
         start_co2_2_flag = false;
         start_dispense_2 = false;
         settling_2 = false;
+        fillDebounceCount_2 = 0;  // Reset debounce counter on abort
       }
       else if (start_dispense_2 == true) {
         clearDisplayHalf(10);
@@ -477,6 +479,7 @@ void eventHold2()
 
 void fillLevelReached2()
 {
+  fillDebounceCount_2 = 0;  // Reset debounce counter
   valveStateBeer_2 = LOW;
   digitalWrite(PIN_BEER_2, LOW);
   DBG_PRINTLN(FillThreshold_2);
@@ -492,6 +495,7 @@ void fillLevelReached2()
 
 void fillLevelReached1()
 {
+  fillDebounceCount_1 = 0;  // Reset debounce counter
   valveStateBeer_1 = LOW;
   digitalWrite(PIN_BEER_1, LOW);
   lcd.setCursor(9, 3);
