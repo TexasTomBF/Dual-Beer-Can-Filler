@@ -6,7 +6,7 @@
 //     replaced with SETTLING state tracked via millis()
 //   - unsigned long for all millis() timestamps (overflow safe)
 //   - Fixed duplicate digitalWrite in fillLevelReached functions
-//   - Fixed set_fillevel_2() silent failure (matched set_fillevel_1 behaviour)
+//   - Fixed set_fillevel_2() silent failure (matched set_fillevel_1 behavior)
 //   - DEBUG compile-time flag wrapping all Serial output
 //   - Typed const variables replacing #define
 //   - const pin assignments
@@ -18,7 +18,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-//This code is fully functional and refactored for improved maintainability and non-blocking operation. Can be used with any Arduino model like the Nano or UNO.
+// This code is fully functional and refactored for improved maintainability and non-blocking operation. Can be used with any Arduino model like the Nano or UNO.
 //Currently its supporting 2 momentary push buttons and one I2C display, the display is showing purging and dispense status for both filler lines.
 //The two buttons have same functions for each fill line:
 //-- SHORT PRESS starts whole sequence with purging and filling corresponding beer line.
@@ -126,7 +126,9 @@ void setup()
   pinMode(PIN_PRESSURE_1, INPUT);
   pinMode(PIN_PRESSURE_2, INPUT);
 
+#if DEBUG
   Serial.begin(9600);
+#endif
 
   lcd.init();        // initialize the lcd
   lcd.backlight();
