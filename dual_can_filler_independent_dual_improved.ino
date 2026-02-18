@@ -19,17 +19,17 @@
 #include <LiquidCrystal_I2C.h>
 
 // This code is fully functional and refactored for improved maintainability and non-blocking operation. Can be used with any Arduino model like the Nano or UNO.
-//Currently its supporting 2 momentary push buttons and one I2C display, the display is showing purging and dispense status for both filler lines.
-//The two buttons have same functions for each fill line:
-//-- SHORT PRESS starts whole sequence with purging and filling corresponding beer line.
-//-- At first filling both buttons needs to be SHORT PRESSED again for the corresponding line when desired fill level is reached. The desired fill level is then stored for future fills (until reset or power down).
-//-- the next fill will stop at the programmed fill level, the display will indicate fill level reached with an '*' next to the fill level measurement.
-//-- After filling a LONG PRESS of any of the buttons resets the fill level for the corresponding beer line, indicated with a capital 'R' in the display for corresponding beer line. This allows to correct/reset fill level when changing can size etc. The new level must then be set on next filling (like at power up).
+// Currently it's supporting 2 momentary push buttons and one I2C display, the display is showing purging and dispense status for both filler lines.
+// The two buttons have same functions for each fill line:
+// -- SHORT PRESS starts whole sequence with purging and filling corresponding beer line.
+// -- At first filling both buttons need to be SHORT PRESSED again for the corresponding line when desired fill level is reached. The desired fill level is then stored for future fills (until reset or power down).
+// -- The next fill will stop at the programmed fill level, the display will indicate fill level reached with an '*' next to the fill level measurement.
+// -- After filling a LONG PRESS of any of the buttons resets the fill level for the corresponding beer line, indicated with a capital 'R' in the display for corresponding beer line. This allows you to correct/reset fill level when changing can size etc. The new level must then be set on next filling (like at power up).
 //
-//The display itself is purely cosmetic in one sense, the filler works perfectly without it if you desire to leave it out.
-//Displayed fill level progress is in 'milliliters' and must be calibrated for each system before first time use. Purely cosmetic, no practical implications if not calibrated. Can easily be changed to other units if desired, or removed completely.
+// The display itself is purely cosmetic in one sense, the filler works perfectly without it if you desire to leave it out.
+// Displayed fill level progress is in 'milliliters' and must be calibrated for each system before first time use. Purely cosmetic, no practical implications if not calibrated. Can easily be changed to other units if desired, or removed completely.
 //
-//Differential pressure sensors are used for level sensing using the same fill tube as for co2 purging. Separate fill tubes for beer. 12V Solenoid valves for water/beer and three way 12V solenoid valves for co2/level sensing. Full parts list on GitHub also.
+// Differential pressure sensors are used for level sensing using the same fill tube as for co2 purging. Separate fill tubes for beer. 12V Solenoid valves for water/beer and three way 12V solenoid valves for co2/level sensing. Full parts list on GitHub also.
 
 // Debug flag - set to 1 to enable serial debug output
 #define DEBUG 0
