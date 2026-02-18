@@ -279,7 +279,8 @@ void loop()
   // Requires multiple consecutive readings above threshold
   if (valveStateBeer_1 == HIGH)
   {
-    if (analogRead(PIN_PRESSURE_1) > FillThreshold_1)
+    int pressureReading1 = analogRead(PIN_PRESSURE_1);
+    if (pressureReading1 > FillThreshold_1)
     {
       fillDebounceCount_1++;
       if (fillDebounceCount_1 >= FILL_DEBOUNCE_COUNT)
@@ -300,7 +301,8 @@ void loop()
 
   if (valveStateBeer_2 == HIGH)
   {
-    if (analogRead(PIN_PRESSURE_2) > FillThreshold_2)
+    int pressureReading2 = analogRead(PIN_PRESSURE_2);
+    if (pressureReading2 > FillThreshold_2)
     {
       fillDebounceCount_2++;
       if (fillDebounceCount_2 >= FILL_DEBOUNCE_COUNT)
