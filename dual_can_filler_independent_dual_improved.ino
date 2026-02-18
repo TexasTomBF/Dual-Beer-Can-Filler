@@ -64,6 +64,10 @@ const unsigned long SETTLE_TIME_1_MS = 300;
 const unsigned long SETTLE_TIME_2_MS = 500;
 
 // Fill level detection debounce - number of consecutive readings required
+// With typical loop time of ~20-30ms per iteration:
+//   3 readings = ~60-90ms delay (good balance)
+//   4 readings = ~80-120ms delay (high noise environments)
+//   5 readings = ~100-150ms delay (very high noise)
 const int FILL_DEBOUNCE_COUNT = 3;
 
 // Calibration constants
@@ -285,8 +289,7 @@ void loop()
       fillDebounceCount_1++;
       if (fillDebounceCount_1 >= FILL_DEBOUNCE_COUNT)
       {
-        fillDebounceCount_1 = 0;  // Reset counter
-        fillLevelReached1();
+        fillLevelReached1();  // Counter reset inside function
       }
     }
     else
@@ -307,8 +310,7 @@ void loop()
       fillDebounceCount_2++;
       if (fillDebounceCount_2 >= FILL_DEBOUNCE_COUNT)
       {
-        fillDebounceCount_2 = 0;  // Reset counter
-        fillLevelReached2();
+        fillLevelReached2();  // Counter reset inside function
       }
     }
     else
