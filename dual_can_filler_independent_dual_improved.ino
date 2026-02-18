@@ -26,8 +26,8 @@
 //-- the next fill will stop at the programmed fill level, the display will indicate fill level reached with an '*' next to the fill level measurement.
 //-- After filling a LONG PRESS of any of the buttons resets the fill level for the corresponding beer line, indicated with a capital 'R' in the display for corresponding beer line. This allows to correct/reset fill level when changing can size etc. The new level must then be set on next filling (like at power up).
 //
-//The display itself is purely cosmetical in one sense, the filler works perfectly without it if you desire to leave it out.
-//Displayed fill level progress is in 'milliliters' and must be calibrated for each system before first time use. Purely cosmetical, no practical implications if not calibrated. Can easily be changed to other units if desired, or removed completely.
+//The display itself is purely cosmetic in one sense, the filler works perfectly without it if you desire to leave it out.
+//Displayed fill level progress is in 'milliliters' and must be calibrated for each system before first time use. Purely cosmetic, no practical implications if not calibrated. Can easily be changed to other units if desired, or removed completely.
 //
 //Differential pressure sensors are used for level sensing using the same fill tube as for co2 purging. Separate fill tubes for beer. 12V Solenoid valves for water/beer and three way 12V solenoid valves for co2/level sensing. Full parts list on GitHub also.
 
@@ -246,7 +246,6 @@ void loop()
     lcd.print("          ");
     lcd.setCursor(1, 2);
     lcd.print("Filling");
-    
     start_dispense_1 = true;
   }
 
@@ -258,7 +257,6 @@ void loop()
     lcd.print("          ");
     lcd.setCursor(11, 2);
     lcd.print("Filling");
-    
     start_dispense_2 = true;
   }
 
